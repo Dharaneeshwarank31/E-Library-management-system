@@ -1,0 +1,215 @@
+-- ============================================================
+-- E-Library Management System - MySQL Database Schema
+-- FIXED VERSION: Correct SHA-256 password hashes
+-- Admin@123   => e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7
+-- Student@123 => b2a1f4fd0a460606b34c8913e2981dac8d2e283d778aba586c416ee2629bfa54
+-- ============================================================
+
+-- Drop and recreate to ensure clean state
+DROP DATABASE IF EXISTS elibrary_db;
+CREATE DATABASE elibrary_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE elibrary_db;
+
+-- ============================================================
+-- TABLE: users
+-- ============================================================
+CREATE TABLE users (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    username    VARCHAR(50)  NOT NULL UNIQUE,
+    password    VARCHAR(255) NOT NULL,
+    full_name   VARCHAR(100) NOT NULL,
+    email       VARCHAR(100) NOT NULL UNIQUE,
+    role        ENUM('ADMIN','STUDENT') NOT NULL DEFAULT 'STUDENT',
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active   TINYINT(1)  NOT NULL DEFAULT 1
+);
+
+-- ============================================================
+-- TABLE: books
+-- ============================================================
+CREATE TABLE books (
+    id               INT AUTO_INCREMENT PRIMARY KEY,
+    title            VARCHAR(200) NOT NULL,
+    author           VARCHAR(150) NOT NULL,
+    category         VARCHAR(100) NOT NULL DEFAULT 'General',
+    isbn             VARCHAR(20)  DEFAULT NULL,
+    description      TEXT         DEFAULT NULL,
+    pdf_path         VARCHAR(500) NOT NULL,
+    cover_image      VARCHAR(500) DEFAULT NULL,
+    total_copies     INT  NOT NULL DEFAULT 1,
+    available_copies INT  NOT NULL DEFAULT 1,
+    uploaded_by      INT  NOT NULL,
+    uploaded_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active        TINYINT(1) NOT NULL DEFAULT 1,
+    CONSTRAINT fk_book_uploader FOREIGN KEY (uploaded_by) REFERENCES users(id)
+);
+
+-- ============================================================
+-- TABLE: borrow_records
+-- ============================================================
+CREATE TABLE borrow_records (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    student_id   INT NOT NULL,
+    book_id      INT NOT NULL,
+    borrow_date  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    return_date  TIMESTAMP NULL DEFAULT NULL,
+    status       ENUM('BORROWED','RETURNED') NOT NULL DEFAULT 'BORROWED',
+    CONSTRAINT fk_borrow_student FOREIGN KEY (student_id) REFERENCES users(id),
+    CONSTRAINT fk_borrow_book    FOREIGN KEY (book_id)    REFERENCES books(id)
+);
+
+-- ============================================================
+-- TABLE: read_logs
+-- ============================================================
+CREATE TABLE read_logs (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    student_id  INT NOT NULL,
+    book_id     INT NOT NULL,
+    opened_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_log_student FOREIGN KEY (student_id) REFERENCES users(id),
+    CONSTRAINT fk_log_book    FOREIGN KEY (book_id)    REFERENCES books(id)
+);
+
+-- ============================================================
+-- INDEXES
+-- ============================================================
+CREATE INDEX idx_books_title    ON books(title);
+CREATE INDEX idx_books_author   ON books(author);
+CREATE INDEX idx_books_category ON books(category);
+CREATE INDEX idx_borrow_student ON borrow_records(student_id);
+CREATE INDEX idx_borrow_book    ON borrow_records(book_id);
+
+-- ============================================================
+-- DEFAULT ADMIN ACCOUNT
+-- username : admin
+-- password : Admin@123
+-- SHA-256  : e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7
+-- ============================================================
+INSERT INTO users (username, password, full_name, email, role)
+VALUES (
+    'admin',
+    'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7',
+    'System Administrator',
+    'admin@elibrary.com',
+    'ADMIN'
+);
+
+-- ============================================================
+-- SAMPLE STUDENT ACCOUNTS
+-- password : Student@123
+-- SHA-256  : b2a1f4fd0a460606b34c8913e2981dac8d2e283d778aba586c416ee2629bfa54
+-- ============================================================
+INSERT INTO users (username, password, full_name, email, role) VALUES
+(
+    'john_doe',
+    'b2a1f4fd0a460606b34c8913e2981dac8d2e283d778aba586c416ee2629bfa54',
+    'John Doe',
+    'john@student.com',
+    'STUDENT'
+),
+(
+    'jane_smith',
+    'b2a1f4fd0a460606b34c8913e2981dac8d2e283d778aba586c416ee2629bfa54',
+    'Jane Smith',
+    'jane@student.com',
+    'STUDENT'
+);
+
+-- ============================================================
+-- SAMPLE BOOKS  (update pdf_path to real paths on your PC)
+-- ============================================================
+INSERT INTO books (title, author, category, isbn, description, pdf_path, total_copies, available_copies, uploaded_by) VALUES
+(
+    'Introduction to Java Programming',
+    'Y. Daniel Liang',
+    'Computer Science',
+    '978-0136520238',
+    'Comprehensive introduction to Java programming language covering OOP concepts.',
+    'C:/ELibrary/books/java_programming.pdf',
+    3, 3, 1
+),
+(
+    'Data Structures and Algorithms',
+    'Thomas H. Cormen',
+    'Computer Science',
+    '978-0262033848',
+    'Foundational text on algorithms and data structures used in software engineering.',
+    'C:/ELibrary/books/data_structures.pdf',
+    2, 2, 1
+),
+(
+    'Database System Concepts',
+    'Abraham Silberschatz',
+    'Database',
+    '978-0078022159',
+    'Covers database design, SQL, transactions, and database administration.',
+    'C:/ELibrary/books/database_concepts.pdf',
+    4, 4, 1
+),
+(
+    'Operating System Concepts',
+    'Abraham Silberschatz',
+    'Operating Systems',
+    '978-1119800361',
+    'Classic OS textbook covering processes, memory management, file systems.',
+    'C:/ELibrary/books/os_concepts.pdf',
+    2, 2, 1
+),
+(
+    'Computer Networks',
+    'Andrew S. Tanenbaum',
+    'Networking',
+    '978-0132126953',
+    'Complete guide to computer networking from physical layer to applications.',
+    'C:/ELibrary/books/computer_networks.pdf',
+    3, 3, 1
+);
+
+-- ============================================================
+-- VIEW: available_books
+-- ============================================================
+CREATE OR REPLACE VIEW available_books AS
+SELECT
+    b.id,
+    b.title,
+    b.author,
+    b.category,
+    b.isbn,
+    b.description,
+    b.pdf_path,
+    b.total_copies,
+    b.available_copies,
+    u.full_name AS uploaded_by,
+    b.uploaded_at
+FROM books b
+JOIN users u ON b.uploaded_by = u.id
+WHERE b.is_active = 1
+ORDER BY b.title;
+
+-- ============================================================
+-- STORED PROCEDURE: search_books
+-- ============================================================
+DELIMITER //
+CREATE PROCEDURE search_books(IN keyword VARCHAR(200))
+BEGIN
+    SELECT b.id, b.title, b.author, b.category, b.isbn,
+           b.available_copies, b.total_copies
+    FROM   books b
+    WHERE  b.is_active = 1
+      AND  (b.title    LIKE CONCAT('%', keyword, '%')
+        OR  b.author   LIKE CONCAT('%', keyword, '%')
+        OR  b.category LIKE CONCAT('%', keyword, '%'))
+    ORDER BY b.title;
+END //
+DELIMITER ;
+
+-- ============================================================
+-- VERIFY: Check inserted data
+-- ============================================================
+SELECT '=== USERS ===' AS info;
+SELECT id, username, role, full_name, email FROM users;
+
+SELECT '=== BOOKS ===' AS info;
+SELECT id, title, author, category FROM books;
+
+SELECT 'Setup complete! Login: admin / Admin@123' AS status;

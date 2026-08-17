@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Library — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/auth.css" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-shapes">
+    <div class="shape s1"></div>
+    <div class="shape s2"></div>
+    <div class="shape s3"></div>
+  </div>
+
+  <div class="auth-container">
+    <!-- Left Panel -->
+    <div class="panel-left">
+      <div class="brand">
+        <span class="brand-icon">📚</span>
+        <h1 class="brand-name">LibraVault</h1>
+      </div>
+      <p class="brand-tagline">Your digital library.<br/>Thousands of books,<br/>one secure login.</p>
+      <div class="decorative-books">
+        <div class="book b1"></div>
+        <div class="book b2"></div>
+        <div class="book b3"></div>
+        <div class="book b4"></div>
+        <div class="book b5"></div>
+      </div>
+    </div>
+
+    <!-- Right Panel — Auth Forms -->
+    <div class="panel-right">
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+        <button class="tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+      </div>
+
+      <!-- Toast notification -->
+      <div class="toast" id="toast"></div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form active" id="form-login" onsubmit="handleLogin(event)">
+        <h2 class="form-title">Welcome back</h2>
+        <p class="form-subtitle">Sign in to access your library</p>
+
+        <div class="field-group">
+          <label for="login-email">Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="login-password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="login-password" placeholder="Your password" required autocomplete="current-password" />
+            <button type="button" class="toggle-pw" onclick="togglePassword('login-password', this)">👁</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-login">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader hidden">⟳</span>
+        </button>
+
+        <p class="switch-hint">Don't have an account? <a href="#" onclick="switchTab('register')">Create one</a></p>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form class="auth-form" id="form-register" onsubmit="handleRegister(event)">
+        <h2 class="form-title">Join LibraVault</h2>
+        <p class="form-subtitle">Create your free account today</p>
+
+        <div class="field-group">
+          <label for="reg-name">Full Name</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="reg-name" placeholder="Your full name" required autocomplete="name" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="reg-email">Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="email" id="reg-email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="reg-password">Password <small>(min. 6 characters)</small></label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="reg-password" placeholder="Create a password" required minlength="6" autocomplete="new-password" />
+            <button type="button" class="toggle-pw" onclick="togglePassword('reg-password', this)">👁</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="reg-confirm">Confirm Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="reg-confirm" placeholder="Repeat your password" required autocomplete="new-password" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-register">
+          <span class="btn-text">Create Account</span>
+          <span class="btn-loader hidden">⟳</span>
+        </button>
+
+        <p class="switch-hint">Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/auth.js"></script>
+</body>
+</html>

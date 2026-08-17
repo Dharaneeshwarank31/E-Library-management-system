@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Library — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand-icon">📚</span>
+      <span class="brand-name">LibraVault</span>
+      <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close sidebar">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" onclick="showSection('books')">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a href="#" class="nav-item" id="nav-upload" style="display:none" onclick="showSection('upload')">
+        <span class="nav-icon">⬆</span> Upload Book
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card" id="user-card">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-info">
+          <span class="user-name" id="sidebar-name">Loading...</span>
+          <span class="user-role" id="sidebar-role">user</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open sidebar">☰</button>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search books by title or author..." oninput="handleSearch()" />
+      </div>
+      <div class="topbar-actions">
+        <select id="category-filter" onchange="handleSearch()">
+          <option value="">All Categories</option>
+        </select>
+        <div class="avatar-btn" id="topbar-avatar" title="Profile">U</div>
+      </div>
+    </header>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- BOOKS SECTION -->
+    <section id="section-books" class="section active">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Library Collection</h2>
+          <p class="section-subtitle" id="books-count">Loading books...</p>
+        </div>
+      </div>
+
+      <div class="books-grid" id="books-grid">
+        <!-- Books rendered here -->
+        <div class="loading-state">
+          <span class="spinner">⟳</span>
+          <p>Loading your library...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- UPLOAD SECTION (Admin only) -->
+    <section id="section-upload" class="section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Upload New Book</h2>
+          <p class="section-subtitle">Add a PDF book to the library</p>
+        </div>
+      </div>
+
+      <div class="upload-card">
+        <form id="upload-form" onsubmit="handleUpload(event)">
+          <div class="form-grid">
+            <div class="field-group">
+              <label for="book-title">Book Title <span class="required">*</span></label>
+              <input type="text" id="book-title" placeholder="e.g. The Great Gatsby" required />
+            </div>
+            <div class="field-group">
+              <label for="book-author">Author Name <span class="required">*</span></label>
+              <input type="text" id="book-author" placeholder="e.g. F. Scott Fitzgerald" required />
+            </div>
+            <div class="field-group">
+              <label for="book-category">Category</label>
+              <input type="text" id="book-category" placeholder="e.g. Fiction, Technology" />
+            </div>
+            <div class="field-group">
+              <label for="book-color">Cover Color</label>
+              <div class="color-row">
+                <input type="color" id="book-color" value="#4F46E5" />
+                <span class="color-presets">
+                  <span class="cp" style="background:#E11D48" onclick="setColor('#E11D48')"></span>
+                  <span class="cp" style="background:#0891B2" onclick="setColor('#0891B2')"></span>
+                  <span class="cp" style="background:#7C3AED" onclick="setColor('#7C3AED')"></span>
+                  <span class="cp" style="background:#D97706" onclick="setColor('#D97706')"></span>
+                  <span class="cp" style="background:#059669" onclick="setColor('#059669')"></span>
+                  <span class="cp" style="background:#4F46E5" onclick="setColor('#4F46E5')"></span>
+                </span>
+              </div>
+            </div>
+            <div class="field-group full-width">
+              <label for="book-desc">Description</label>
+              <textarea id="book-desc" rows="3" placeholder="A short summary of the book..."></textarea>
+            </div>
+            <div class="field-group full-width">
+              <label>PDF File <span class="required">*</span></label>
+              <div class="drop-zone" id="drop-zone" onclick="document.getElementById('pdf-file').click()">
+                <input type="file" id="pdf-file" accept=".pdf" onchange="handleFileSelect(this)" hidden />
+                <div class="drop-inner" id="drop-inner">
+                  <span class="drop-icon">📄</span>
+                  <p>Click to upload or drag & drop PDF here</p>
+                  <small>Max file size: 50MB</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="upload-actions">
+            <button type="button" class="btn-secondary" onclick="resetUploadForm()">Clear</button>
+            <button type="submit" class="btn-primary" id="btn-upload">
+              <span class="btn-text">📤 Upload Book</span>
+              <span class="btn-loader hidden">⟳ Uploading...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>
